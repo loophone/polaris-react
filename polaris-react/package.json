@@ -1,7 +1,7 @@
 {
-  "name": "@shopify/polaris",
+  "name": "@loophone/polaris",
   "description": "Shopify’s admin product component library",
-  "version": "13.10.1",
+  "version": "13.10.1-fork.2",
   "private": false,
   "license": "SEE LICENSE IN LICENSE.md",
   "author": "Shopify <dev@shopify.com>",

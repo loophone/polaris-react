@@ -233,8 +233,8 @@ export function Header({
   return (
     <Box
       position="relative"
-      paddingBlockStart={{xs: '400', md: '600'}}
-      paddingBlockEnd={{xs: '400', md: '600'}}
+      paddingBlockStart={{xs: '400', md: '400'}}
+      paddingBlockEnd={{xs: '400', md: '400'}}
       paddingInlineStart={{xs: '400', sm: '0'}}
       paddingInlineEnd={{xs: '400', sm: '0'}}
       visuallyHidden={titleHidden}

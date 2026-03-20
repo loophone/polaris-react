@@ -2,12 +2,6 @@ import React, {useMemo} from 'react';
 
 import {Scrollable} from '../Scrollable';
 import {WithinContentContext} from '../../utilities/within-content-context';
-import {Image} from '../Image';
-import {UnstyledLink} from '../UnstyledLink';
-import {classNames} from '../../utilities/css';
-import {getWidth} from '../../utilities/get-width';
-import {useFrame} from '../../utilities/frame';
-import {useBreakpoints} from '../../utilities/breakpoints';
 
 import {NavigationContext} from './context';
 import {Section, Item} from './components';
@@ -29,45 +23,10 @@ export const Navigation: React.FunctionComponent<NavigationProps> & {
   Section: typeof Section;
 } = function Navigation({
   children,
-  contextControl,
   location,
   onDismiss,
   ariaLabelledBy,
-  logoSuffix,
 }: NavigationProps) {
-  const {logo} = useFrame();
-  const width = getWidth(logo, 104);
-  const {mdUp} = useBreakpoints();
-
-  const logoMarkup = logo ? (
-    <div
-      className={classNames(
-        styles.LogoContainer,
-        logoSuffix && styles.hasLogoSuffix,
-      )}
-    >
-      <UnstyledLink
-        url={logo.url || ''}
-        className={styles.LogoLink}
-        style={{width}}
-      >
-        <Image
-          source={logo.topBarSource || ''}
-          alt={logo.accessibilityLabel || ''}
-          className={styles.Logo}
-          style={{width}}
-        />
-      </UnstyledLink>
-      {logoSuffix}
-    </div>
-  ) : null;
-
-  const mediaMarkup = contextControl ? (
-    <div className={styles.ContextControl}>{contextControl}</div>
-  ) : (
-    logoMarkup
-  );
-
   const context = useMemo(
     () => ({location, onNavigationDismiss: onDismiss}),
     [location, onDismiss],
@@ -77,7 +36,6 @@ export const Navigation: React.FunctionComponent<NavigationProps> & {
     <NavigationContext.Provider value={context}>
       <WithinContentContext.Provider value>
         <nav className={styles.Navigation} aria-labelledby={ariaLabelledBy}>
-          {mdUp ? mediaMarkup : null}
           <Scrollable className={styles.PrimaryNavigation}>
             {children}
           </Scrollable>

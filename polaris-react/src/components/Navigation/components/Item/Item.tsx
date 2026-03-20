@@ -1,4 +1,4 @@
-import React, {useEffect, useContext, useState, useRef, useId} from 'react';
+import React, {useContext, useState, useRef, useId} from 'react';
 import type {MouseEvent, ReactNode} from 'react';
 
 import {useIsomorphicLayoutEffect} from '../../../../utilities/use-isomorphic-layout-effect';
@@ -12,7 +12,6 @@ import type {TextProps} from '../../../Text';
 import {UnstyledButton} from '../../../UnstyledButton';
 import {UnstyledLink} from '../../../UnstyledLink';
 import {useI18n} from '../../../../utilities/i18n';
-import {useMediaQuery} from '../../../../utilities/media-query';
 import styles from '../../Navigation.module.css';
 import {Tooltip} from '../../../Tooltip';
 import {MatchState} from '../../types';
@@ -54,17 +53,18 @@ export function Item({
   onMouseLeave,
 }: ItemProps) {
   const i18n = useI18n();
-  const {isNavigationCollapsed} = useMediaQuery();
+  // const {isNavigationCollapsed} = useMediaQuery();
   const secondaryNavigationId = useId();
   const {location, onNavigationDismiss} = useContext(NavigationContext);
   const navTextRef = useRef<HTMLSpanElement>(null);
   const [isTruncated, setIsTruncated] = useState(false);
 
-  useEffect(() => {
-    if (!isNavigationCollapsed && expanded) {
-      onToggleExpandedState?.();
-    }
-  }, [expanded, isNavigationCollapsed, onToggleExpandedState]);
+  // @loophone modified - always expand when there are sub navigation items
+  // useEffect(() => {
+  //   if (!isNavigationCollapsed && expanded) {
+  //     onToggleExpandedState?.();
+  //   }
+  // }, [expanded, isNavigationCollapsed, onToggleExpandedState]);
 
   useIsomorphicLayoutEffect(() => {
     const navTextNode = navTextRef.current;
@@ -166,40 +166,41 @@ export function Item({
     </span>
   );
 
-  if (url == null) {
-    const className = classNames(
-      styles.Item,
-      disabled && styles['Item-disabled'],
-      selectedOverride && styles['Item-selected'],
-    );
+  // @loophone modified - always render as button, even without url
+  // if (url == null) {
+  //   const className = classNames(
+  //     styles.Item,
+  //     disabled && styles['Item-disabled'],
+  //     selectedOverride && styles['Item-selected'],
+  //   );
 
-    return (
-      <li className={styles.ListItem}>
-        <div className={styles.ItemWrapper}>
-          <div
-            className={classNames(
-              styles.ItemInnerWrapper,
-              disabled && styles.ItemInnerDisabled,
-              selectedOverride && styles['ItemInnerWrapper-selected'],
-            )}
-          >
-            <button
-              type="button"
-              className={className}
-              disabled={disabled}
-              aria-disabled={disabled}
-              aria-label={accessibilityLabel}
-              onClick={getClickHandler(onClick)}
-            >
-              {iconMarkup}
-              {itemLabelMarkup}
-              {wrappedBadgeMarkup}
-            </button>
-          </div>
-        </div>
-      </li>
-    );
-  }
+  //   return (
+  //     <li className={styles.ListItem}>
+  //       <div className={styles.ItemWrapper}>
+  //         <div
+  //           className={classNames(
+  //             styles.ItemInnerWrapper,
+  //             disabled && styles.ItemInnerDisabled,
+  //             selectedOverride && styles['ItemInnerWrapper-selected'],
+  //           )}
+  //         >
+  //           <button
+  //             type="button"
+  //             className={className}
+  //             disabled={disabled}
+  //             aria-disabled={disabled}
+  //             aria-label={accessibilityLabel}
+  //             onClick={getClickHandler(onClick)}
+  //           >
+  //             {iconMarkup}
+  //             {itemLabelMarkup}
+  //             {wrappedBadgeMarkup}
+  //           </button>
+  //         </div>
+  //       </div>
+  //     </li>
+  //   );
+  // }
 
   if (secondaryAction && process.env.NODE_ENV === 'development') {
     // eslint-disable-next-line no-console
@@ -366,11 +367,13 @@ export function Item({
         event.preventDefault();
       }
 
-      if (
-        subNavigationItems &&
-        subNavigationItems.length > 0 &&
-        isNavigationCollapsed
-      ) {
+      // @loophone modified - always expand when there are sub navigation items, regardless of collapse state
+      // if (
+      //   subNavigationItems &&
+      //   subNavigationItems.length > 0 &&
+      //   isNavigationCollapsed
+      // ) {
+      if (subNavigationItems && subNavigationItems.length > 0) {
         event.preventDefault();
         onToggleExpandedState?.();
       } else if (onNavigationDismiss) {
