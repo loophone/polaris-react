@@ -240,8 +240,8 @@ importers:
         specifier: ^13.3.0
         version: 13.3.0(rollup@2.79.2)
       '@shopify/polaris':
-        specifier: ^13.10.1
-        version: link:../polaris-react
+        specifier: ^13.9.5
+        version: 13.9.5(react-dom@18.2.0)(react@18.2.0)
       '@types/is-git-clean':
         specifier: ^1.1.0
         version: 1.1.0
@@ -451,8 +451,8 @@ importers:
         specifier: ^0.0.14
         version: 0.0.14(react@18.2.0)
       '@shopify/polaris':
-        specifier: ^13.10.1
-        version: link:../polaris-react
+        specifier: ^13.9.5
+        version: 13.9.5(react-dom@18.2.0)(react@18.2.0)
       '@shopify/polaris-icons':
         specifier: ^9.3.1
         version: link:../polaris-icons
@@ -6674,6 +6674,37 @@ packages:
       - supports-color
     dev: true
 
+  /@shopify/polaris-icons@9.3.1(react@18.2.0):
+    resolution: {integrity: sha512-16BIFAT93LJ8X4YRXz5cR9ZPHeErMg3DYS0gyTPNPkd0E5IBPoTxPINjn2b4Mr9Sc1x4RfI4AqPcV8ut0D1J5w==}
+    engines: {node: '>=20.10.0'}
+    peerDependencies:
+      react: '*'
+    dependencies:
+      react: 18.2.0
+
+  /@shopify/polaris-tokens@9.4.2:
+    resolution: {integrity: sha512-WNoDWLYFj38Cj0FolbNsLaY54JbjuYoO0qsLCj6yBb3Bkg4BEdAjOHji9AktL9IZGPsNhTcMp2/8CfzKtSHg2A==}
+    engines: {node: '>=20.10.0'}
+    dependencies:
+      deepmerge: 4.3.1
+
+  /@shopify/polaris@13.9.5(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-UN+rT2q1r/uF0Xia8MaCl2nDxatuzbjunS5WYcv4qw8VBvThTxDVURgpwOuvutSrvu138pwScOAah933vqlYkg==}
+    engines: {node: '>=20.10.0'}
+    peerDependencies:
+      react: ^18.0.0
+      react-dom: ^18.0.0
+    dependencies:
+      '@shopify/polaris-icons': 9.3.1(react@18.2.0)
+      '@shopify/polaris-tokens': 9.4.2
+      '@types/react': 18.2.9
+      '@types/react-dom': 18.2.4
+      '@types/react-transition-group': 4.4.2
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      react-fast-compare: 3.2.0
+      react-transition-group: 4.4.2(react-dom@18.2.0)(react@18.2.0)
+
   /@shopify/postcss-plugin@5.0.1(postcss@8.5.6):
     resolution: {integrity: sha512-/YBuS9i/wRUh5RyhdvEDONnUpdAdE2qLJ/xJrGk0fjvkqU9+Pqv4w0rCTIbEZ2OENh3EkeSrZHOwxhEOo2Scvg==}
     peerDependencies:
@@ -7863,7 +7894,6 @@ packages:
     resolution: {integrity: sha512-G2mHoTMTL4yoydITgOGwWdWMVd8sNgyEP85xVmMKAPUBwQWm9wBPQUmvbeF4V3WBY1P7mmL4BkjQ0SqUpf1snw==}
     dependencies:
       '@types/react': 18.2.9
-    dev: false
 
   /@types/react-syntax-highlighter@15.5.6:
     resolution: {integrity: sha512-i7wFuLbIAFlabTeD2I1cLjEOrG/xdMa/rpx2zwzAoGHuXJDhSqp9BSfDlMHSh9JSuNfxHk9eEmMX6D55GiyjGg==}
@@ -7875,7 +7905,6 @@ packages:
     resolution: {integrity: sha512-KibDWL6nshuOJ0fu8ll7QnV/LVTo3PzQ9aCPnRUYPfX7eZohHwLIdNHj7pftanREzHNP4/nJa8oeM73uSiavMQ==}
     dependencies:
       '@types/react': 18.2.9
-    dev: false
 
   /@types/react@17.0.50:
     resolution: {integrity: sha512-ZCBHzpDb5skMnc1zFXAXnL3l1FAdi+xZvwxK+PkglMmBrwjpp9nKaWuEvrGnSifCJmBFGxZOOFuwC6KH/s0NuA==}
@@ -11901,7 +11930,6 @@ packages:
     dependencies:
       '@babel/runtime': 7.27.6
       csstype: 3.1.1
-    dev: false
 
   /dom-serializer@0.2.2:
     resolution: {integrity: sha512-2/xPb3ORsQ42nHYiSunXkDjPLBaEj/xTwUO4B7XCZQTRk7EBtTOPaygh10YAAh2OI1Qrp6NWfpAhzswj0ydt9g==}
@@ -20873,7 +20901,6 @@ packages:
 
   /react-fast-compare@3.2.0:
     resolution: {integrity: sha512-rtGImPZ0YyLrscKI9xTpV8psd6I8VAtjKCzQDlzyDvqJA8XOW78TXYQwNRNd8g8JZnDu8q9Fu/1v4HPAVwVdHA==}
-    dev: false
 
   /react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
@@ -20957,7 +20984,6 @@ packages:
       prop-types: 15.8.1
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
-    dev: false
 
   /react-universal-interface@0.6.2(react@18.2.0)(tslib@2.8.1):
     resolution: {integrity: sha512-dg8yXdcQmvgR13RIlZbTRQOoUrDciFVoSBZILwjE2LFISxZZ8loVJKAkuzswl5js8BHda79bIb2b84ehU8IjXw==}
