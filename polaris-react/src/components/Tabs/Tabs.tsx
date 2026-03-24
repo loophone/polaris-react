@@ -596,7 +596,7 @@ export const Tabs = ({
               )}
             </ul>
 
-            {canCreateNewView && tabsToShow.length > 0 ? (
+            {canCreateNewView && (
               <div className={styles.NewTab}>
                 <CreateViewModal
                   open={isNewViewModalActive}
