@@ -902,6 +902,91 @@ export const WithEmptyState = {
   },
 };
 
+export const WithEmptyLoadingState = {
+  render() {
+    const customers = [];
+    const resourceName = {
+      singular: 'customer',
+      plural: 'customers',
+    };
+
+    const {selectedResources, allResourcesSelected, handleSelectionChange} =
+      useIndexResourceState(customers);
+
+    const emptyStateMarkup = (
+      <EmptySearchResult
+        title="No customers yet"
+        description="Try changing the filters or search term"
+        withIllustration
+      />
+    );
+
+    const rowMarkup = customers.map(
+      ({id, name, location, orders, amountSpent}, index) => (
+        <IndexTable.Row
+          id={id}
+          key={id}
+          selected={selectedResources.includes(id)}
+          position={index}
+        >
+          <IndexTable.Cell>
+            <Text fontWeight="bold" as="span" variant="bodyMd">
+              {name}
+            </Text>
+          </IndexTable.Cell>
+          <IndexTable.Cell>
+            <Text variant="bodyMd" as="span">
+              {location}
+            </Text>
+          </IndexTable.Cell>
+          <IndexTable.Cell>
+            <Text as="span" alignment="end" numeric variant="bodyMd">
+              {orders}
+            </Text>
+          </IndexTable.Cell>
+          <IndexTable.Cell>
+            <Text as="span" alignment="end" numeric variant="bodyMd">
+              {amountSpent}
+            </Text>
+          </IndexTable.Cell>
+        </IndexTable.Row>
+      ),
+    );
+
+    return (
+      <LegacyCard>
+        <IndexTable
+          condensed={useBreakpoints().smDown}
+          resourceName={resourceName}
+          itemCount={customers.length}
+          selectedItemsCount={
+            allResourcesSelected ? 'All' : selectedResources.length
+          }
+          onSelectionChange={handleSelectionChange}
+          emptyState={emptyStateMarkup}
+          headings={[
+            {title: 'Name'},
+            {title: 'Location'},
+            {
+              alignment: 'end',
+              id: 'order-count',
+              title: 'Order count',
+            },
+            {
+              alignment: 'end',
+              id: 'amount-spent',
+              title: 'Amount spent',
+            },
+          ]}
+          loading={true}
+        >
+          {rowMarkup}
+        </IndexTable>
+      </LegacyCard>
+    );
+  },
+};
+
 export const WithBulkActions = {
   render() {
     const customers = [

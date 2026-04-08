@@ -560,69 +560,73 @@ export const Tabs = ({
 
   return (
     <div className={styles.Outer}>
-      {tabMeasurer}
-      <div className={wrapperClassNames} ref={scrollRef}>
-        <div className={styles.ButtonWrapper} ref={wrapRef}>
-          <ul
-            role={tabsMarkup.length > 0 ? 'tablist' : undefined}
-            className={classname}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
-            onKeyUp={handleKeyPress}
-            data-tabs-focus-catchment
-          >
-            {tabsMarkup}
-            {mdDown || tabsToShow.length === 0 ? null : (
-              <li className={disclosureTabClassName} role="presentation">
-                <Popover
-                  preferredPosition="below"
-                  preferredAlignment="left"
-                  activator={activator}
-                  active={disclosureActivatorVisible && showDisclosure}
-                  onClose={handleClose}
-                  autofocusTarget="first-node"
-                  zIndexOverride={disclosureZIndexOverride}
-                >
-                  <List
-                    focusIndex={hiddenTabs.indexOf(tabToFocus)}
-                    disclosureTabs={disclosureTabs}
-                    onClick={handleListTabClick}
-                    onKeyPress={handleKeyPress}
-                  />
-                </Popover>
-              </li>
-            )}
-          </ul>
+      <Box padding={{md: '200'}}>
+        {tabMeasurer}
+        <div className={wrapperClassNames} ref={scrollRef}>
+          <div className={styles.ButtonWrapper} ref={wrapRef}>
+            <ul
+              role={tabsMarkup.length > 0 ? 'tablist' : undefined}
+              className={classname}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
+              onKeyUp={handleKeyPress}
+              data-tabs-focus-catchment
+            >
+              {tabsMarkup}
+              {mdDown || tabsToShow.length === 0 ? null : (
+                <li className={disclosureTabClassName} role="presentation">
+                  <Popover
+                    preferredPosition="below"
+                    preferredAlignment="left"
+                    activator={activator}
+                    active={disclosureActivatorVisible && showDisclosure}
+                    onClose={handleClose}
+                    autofocusTarget="first-node"
+                    zIndexOverride={disclosureZIndexOverride}
+                  >
+                    <List
+                      focusIndex={hiddenTabs.indexOf(tabToFocus)}
+                      disclosureTabs={disclosureTabs}
+                      onClick={handleListTabClick}
+                      onKeyPress={handleKeyPress}
+                    />
+                  </Popover>
+                </li>
+              )}
+            </ul>
 
-          {canCreateNewView ? (
-            <div className={styles.NewTab}>
-              <CreateViewModal
-                open={isNewViewModalActive}
-                onClose={handleCloseNewViewModal}
-                onClickPrimaryAction={handleSaveNewViewModal}
-                viewNames={viewNames}
-                activator={
-                  disabled ? (
-                    newTab
-                  ) : (
-                    <div>
-                      <Tooltip
-                        content={i18n.translate('Polaris.Tabs.newViewTooltip')}
-                        preferredPosition="above"
-                        hoverDelay={400}
-                        zIndexOverride={disclosureZIndexOverride}
-                      >
-                        {newTab}
-                      </Tooltip>
-                    </div>
-                  )
-                }
-              />
-            </div>
-          ) : null}
+            {canCreateNewView && tabsToShow.length > 0 ? (
+              <div className={styles.NewTab}>
+                <CreateViewModal
+                  open={isNewViewModalActive}
+                  onClose={handleCloseNewViewModal}
+                  onClickPrimaryAction={handleSaveNewViewModal}
+                  viewNames={viewNames}
+                  activator={
+                    disabled ? (
+                      newTab
+                    ) : (
+                      <div>
+                        <Tooltip
+                          content={i18n.translate(
+                            'Polaris.Tabs.newViewTooltip',
+                          )}
+                          preferredPosition="above"
+                          hoverDelay={400}
+                          zIndexOverride={disclosureZIndexOverride}
+                        >
+                          {newTab}
+                        </Tooltip>
+                      </div>
+                    )
+                  }
+                />
+              </div>
+            ) : null}
+          </div>
         </div>
-      </div>
+      </Box>
 
       {panelMarkup}
     </div>

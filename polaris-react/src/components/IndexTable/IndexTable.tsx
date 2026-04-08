@@ -16,7 +16,6 @@ import {LegacyStack} from '../LegacyStack';
 import {Pagination} from '../Pagination';
 import type {PaginationProps} from '../Pagination';
 import {Sticky} from '../Sticky';
-import {Spinner} from '../Spinner';
 import {Text} from '../Text';
 import {Tooltip} from '../Tooltip';
 import {UnstyledButton} from '../UnstyledButton';
@@ -43,6 +42,7 @@ import type {
 import {getTableHeadingsBySelector} from './utilities';
 import {ScrollContainer, Cell, Row} from './components';
 import styles from './IndexTable.module.css';
+import {SkeletonBodyText} from '../SkeletonBodyText';
 
 interface IndexTableHeadingBase {
   id?: string;
@@ -489,26 +489,28 @@ function IndexTableBase({
 
   const paginatedSelectAllAction = getPaginatedSelectAllAction();
 
-  const loadingMarkup = (
-    <div
-      className={classNames(
-        styles.LoadingPanel,
-        loading && styles.LoadingPanelEntered,
-      )}
-    >
-      <div className={styles.LoadingPanelRow}>
-        <Spinner size="small" />
-        <span className={styles.LoadingPanelText}>
-          {i18n.translate(
-            'Polaris.IndexTable.resourceLoadingAccessibilityLabel',
-            {
-              resourceNamePlural: resourceName.plural.toLocaleLowerCase(),
-            },
-          )}
-        </span>
-      </div>
-    </div>
-  );
+  // @loophone modified - remove loading markup
+  const loadingMarkup = null;
+  // const loadingMarkup = (
+  //   <div
+  //     className={classNames(
+  //       styles.LoadingPanel,
+  //       loading && styles.LoadingPanelEntered,
+  //     )}
+  //   >
+  //     <div className={styles.LoadingPanelRow}>
+  //       <Spinner size="small" />
+  //       <span className={styles.LoadingPanelText}>
+  //         {i18n.translate(
+  //           'Polaris.IndexTable.resourceLoadingAccessibilityLabel',
+  //           {
+  //             resourceNamePlural: resourceName.plural.toLocaleLowerCase(),
+  //           },
+  //         )}
+  //       </span>
+  //     </div>
+  //   </div>
+  // );
 
   const stickyTableClassNames = classNames(
     styles.StickyTable,
@@ -703,9 +705,15 @@ function IndexTableBase({
       </ScrollContainer>
     </>
   );
+
+  // @loophone modified - don't show empty state when loading
   const tableContentMarkup =
     itemCount > 0 ? (
       bodyMarkup
+    ) : loading ? (
+      <div className={styles.EmptySearchResultWrapper}>
+        <SkeletonBodyText />
+      </div>
     ) : (
       <div className={styles.EmptySearchResultWrapper}>{emptyStateMarkup}</div>
     );
