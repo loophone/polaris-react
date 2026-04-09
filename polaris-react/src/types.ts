@@ -384,6 +384,8 @@ export interface FilterInterface {
   key: string;
   /** The name of the filter */
   label: string;
+  /** @loophone modified - Optional content to display in the filter pill */
+  content?: string | React.ReactNode;
   /** The markup for the given filter */
   filter: React.ReactNode;
   /** Whether or not the filter should have a shortcut popover displayed */

@@ -41,6 +41,7 @@ export function FilterPill({
   unsavedChanges = false,
   filterKey,
   label,
+  content,
   filter,
   disabled,
   hideClearButton,
@@ -175,7 +176,8 @@ export function FilterPill({
         >
           <InlineStack wrap={false} align="center" blockAlign="center" gap="0">
             {unsavedPip}
-            {labelMarkup}
+            {/* @loophone modified - Optional content to display in the filter pill */}
+            {content ?? labelMarkup}
             {disclosureMarkup}
           </InlineStack>
         </UnstyledButton>
