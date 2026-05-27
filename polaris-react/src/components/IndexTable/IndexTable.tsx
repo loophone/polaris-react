@@ -47,6 +47,10 @@ import {SkeletonBodyText} from '../SkeletonBodyText';
 interface IndexTableHeadingBase {
   id?: string;
   /**
+   * @loophone modified - add width prop
+   */
+  width?: string;
+  /**
    * Adjust horizontal alignment of header content.
    * @default 'start'
    */
@@ -747,6 +751,7 @@ function IndexTableBase({
     const isSecond = index === 0;
     const isLast = index === headings.length - 1;
     const hasSortable = sortable?.some((value) => value === true);
+    const headingWidth = heading.width;
     const headingAlignment = heading.alignment || 'start';
     const headingContentClassName = classNames(
       styles.TableHeading,
@@ -772,7 +777,8 @@ function IndexTableBase({
         id={id}
         className={headingContentClassName}
         key={getHeadingKey(heading)}
-        style={stickyPositioningStyle}
+        // @loophone modified - add width
+        style={{...stickyPositioningStyle, width: headingWidth}}
         {...tagProps}
       >
         {renderHeadingContent(heading, index)}
