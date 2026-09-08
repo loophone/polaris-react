@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 import {XCircleIcon} from '@shopify/polaris-icons';
 
+import {useIsomorphicLayoutEffect} from '../../utilities/use-isomorphic-layout-effect';
 import {classNames, variationName} from '../../utilities/css';
 import {useI18n} from '../../utilities/i18n';
 import {useIsAfterInitialMount} from '../../utilities/use-is-after-initial-mount';
@@ -84,6 +85,13 @@ interface NonMutuallyExclusiveProps {
   placeholder?: string;
   /** Initial value for the input */
   value?: string;
+  /**
+   * When provided, the input's value text is styled and behaves like a link
+   * while the field is not focused: hovering over the text reveals an
+   * underline, and clicking it fires the callback. Only applies to
+   * single-line fields.
+   */
+  onLink?: () => void;
   /** Additional hint text to display */
   helpText?: React.ReactNode;
   /** Label for the input */
@@ -207,6 +215,7 @@ export function TextField({
   suffix,
   verticalContent,
   placeholder,
+  onLink,
   value = '',
   helpText,
   label,
@@ -272,6 +281,7 @@ export function TextField({
   const suffixRef = useRef<HTMLDivElement>(null);
   const loadingRef = useRef<HTMLDivElement>(null);
   const verticalContentRef = useRef<HTMLDivElement>(null);
+  const linkUnderlineRef = useRef<HTMLDivElement>(null);
   const buttonPressTimer = useRef<number>();
   const spinnerRef = useRef<HTMLDivElement>(null);
 
@@ -305,6 +315,86 @@ export function TextField({
   const normalizedStep = step != null ? step : 1;
   const normalizedMax = max != null ? max : Infinity;
   const normalizedMin = min != null ? min : -Infinity;
+
+  // Re-position the link underline beneath the input's value text whenever
+  // the value or layout may have changed. The underline is rendered as an
+  // absolutely positioned sibling of the input because an input's value text
+  // is not addressable with CSS.
+  const updateLinkUnderline = useCallback(() => {
+    const underline = linkUnderlineRef.current;
+    const input = getInputRef();
+    const container = textFieldRef.current;
+
+    if (
+      !underline ||
+      !input ||
+      !container ||
+      multiline ||
+      input.tagName === 'TEXTAREA' ||
+      normalizedValue === ''
+    ) {
+      return;
+    }
+
+    const inputStyle = window.getComputedStyle(input);
+    const paddingLeft = parseFloat(inputStyle.paddingLeft) || 0;
+    const paddingRight = parseFloat(inputStyle.paddingRight) || 0;
+    const paddingTop = parseFloat(inputStyle.paddingTop) || 0;
+    const paddingBottom = parseFloat(inputStyle.paddingBottom) || 0;
+    const lineHeight = parseFloat(inputStyle.lineHeight) || 0;
+    const fontSize = parseFloat(inputStyle.fontSize) || 0;
+    const textWidth = measureTextWidth(
+      `${inputStyle.fontWeight} ${fontSize}px ${inputStyle.fontFamily}`,
+      normalizedValue,
+    );
+
+    const contentWidth = input.clientWidth - paddingLeft - paddingRight;
+    const contentHeight = input.clientHeight - paddingTop - paddingBottom;
+    const textTop = paddingTop + (contentHeight - lineHeight) / 2;
+
+    let horizontalOffset = paddingLeft;
+    if (textWidth < contentWidth && inputStyle.textAlign === 'center') {
+      horizontalOffset = paddingLeft + (contentWidth - textWidth) / 2;
+    } else if (textWidth < contentWidth && inputStyle.textAlign === 'right') {
+      horizontalOffset = contentWidth - textWidth + paddingLeft;
+    }
+
+    const containerRect = container.getBoundingClientRect();
+    const inputRect = input.getBoundingClientRect();
+
+    underline.style.left = `${Math.round(
+      inputRect.left -
+        containerRect.left +
+        horizontalOffset -
+        (input.scrollLeft || 0),
+    )}px`;
+    underline.style.top = `${Math.round(
+      inputRect.top - containerRect.top + textTop,
+    )}px`;
+    underline.style.width = `${Math.max(0, Math.round(textWidth))}px`;
+    underline.style.height = `${Math.round(lineHeight)}px`;
+  }, [multiline, normalizedValue, getInputRef]);
+
+  useIsomorphicLayoutEffect(() => {
+    updateLinkUnderline();
+  }, [updateLinkUnderline]);
+
+  useEffect(() => {
+    if (!onLink) return undefined;
+
+    window.addEventListener('resize', updateLinkUnderline);
+    // Re-measure once webfonts have finished loading
+    if (document.fonts) {
+      document.fonts.addEventListener('loadingdone', updateLinkUnderline);
+    }
+
+    return () => {
+      window.removeEventListener('resize', updateLinkUnderline);
+      if (document.fonts) {
+        document.fonts.removeEventListener('loadingdone', updateLinkUnderline);
+      }
+    };
+  }, [onLink, updateLinkUnderline]);
 
   const className = classNames(
     styles.TextField,
@@ -629,6 +719,20 @@ export function TextField({
 
   const inputMarkup = verticalContent ? inputWithVerticalContentMarkup : input;
 
+  // The underline stays mounted so its measured geometry survives focus
+  // changes; while the field is focused it is hidden and made
+  // non-interactive with CSS (`.focus > .linkTextUnderline`), so the value
+  // text behaves like any other input text while editing.
+  const linkUnderlineMarkup =
+    onLink && normalizedValue !== '' && !multiline && !disabled ? (
+      <div
+        ref={linkUnderlineRef}
+        className={styles.linkTextUnderline}
+        onMouseDown={handleLinkUnderlineMouseDown}
+        onClick={handleLinkUnderlineClick}
+      />
+    ) : null;
+
   const backdropMarkup = (
     <div
       className={classNames(
@@ -679,6 +783,7 @@ export function TextField({
           {loadingMarkup}
           {clearButtonMarkup}
           {spinnerMarkup}
+          {linkUnderlineMarkup}
           {backdropMarkup}
           {resizer}
         </div>
@@ -738,6 +843,19 @@ export function TextField({
 
   function handleClearButtonPress() {
     onClearButtonClick && onClearButtonClick(id);
+  }
+
+  function handleLinkUnderlineMouseDown(event: React.MouseEvent) {
+    // Clicking the link text must not focus the input or start a selection,
+    // otherwise the click would also open the editable state.
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  function handleLinkUnderlineClick(event: React.MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (onLink) onLink();
   }
 
   function handleKeyPress(event: React.KeyboardEvent) {
@@ -872,4 +990,28 @@ function normalizeAriaMultiline(multiline?: boolean | number) {
   return Boolean(multiline) || (typeof multiline === 'number' && multiline > 0)
     ? {'aria-multiline': true}
     : undefined;
+}
+
+let measureTextContext: CanvasRenderingContext2D | null | undefined;
+
+/**
+ * Approximate the pixel width of `text` rendered in `font`, matching how the
+ * input lays out its value. Falls back to a rough estimate when the canvas
+ * 2D context is unavailable (e.g. in test environments).
+ */
+function measureTextWidth(font: string, text: string) {
+  if (typeof document === 'undefined') return 0;
+
+  if (measureTextContext === undefined) {
+    measureTextContext = document.createElement('canvas').getContext('2d');
+  }
+
+  if (!measureTextContext) return text.length * 8;
+
+  try {
+    measureTextContext.font = font;
+    return measureTextContext.measureText(text).width;
+  } catch {
+    return text.length * 8;
+  }
 }

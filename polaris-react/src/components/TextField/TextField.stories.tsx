@@ -1127,3 +1127,41 @@ export const WithLoading = {
     );
   },
 };
+
+export const WithLink = {
+  render() {
+    const [value, setValue] = useState('LO-20240908-00123');
+    const [message, setMessage] = useState('');
+
+    const handleChange = useCallback((newValue) => setValue(newValue), []);
+    const handleLink = useCallback(() => {
+      setMessage(
+        'Link clicked — navigate somewhere, e.g. router.push("/orders/123")',
+      );
+    }, []);
+
+    return (
+      <BlockStack gap="400">
+        <TextField
+          label="Order number (editable)"
+          value={value}
+          onChange={handleChange}
+          autoComplete="off"
+          onLink={handleLink}
+          helpText="Hover the value to reveal the underline, click the value to fire onLink, click anywhere else to edit."
+        />
+        <TextField
+          label="Order number (read only)"
+          value={value}
+          onChange={handleChange}
+          autoComplete="off"
+          onLink={handleLink}
+          readOnly
+        />
+        <Text as="p" variant="bodyMd">
+          {message}
+        </Text>
+      </BlockStack>
+    );
+  },
+};

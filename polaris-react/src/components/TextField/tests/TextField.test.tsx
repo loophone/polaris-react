@@ -198,6 +198,122 @@ describe('<TextField />', () => {
     });
   });
 
+  describe('link', () => {
+    it('renders an underline overlay over the value when `onLink` is provided', () => {
+      const textField = mountWithApp(
+        <TextField
+          label="TextField"
+          value="LO-123"
+          onLink={jest.fn()}
+          autoComplete="off"
+        />,
+      );
+
+      expect(textField).toContainReactComponent('div', {
+        className: styles.linkTextUnderline,
+      });
+    });
+
+    it('does not render an underline overlay when `onLink` is not provided', () => {
+      const textField = mountWithApp(
+        <TextField label="TextField" value="LO-123" autoComplete="off" />,
+      );
+
+      expect(textField).not.toContainReactComponent('div', {
+        className: styles.linkTextUnderline,
+      });
+    });
+
+    it('does not render an underline overlay when the value is empty', () => {
+      const textField = mountWithApp(
+        <TextField
+          label="TextField"
+          value=""
+          onLink={jest.fn()}
+          autoComplete="off"
+        />,
+      );
+
+      expect(textField).not.toContainReactComponent('div', {
+        className: styles.linkTextUnderline,
+      });
+    });
+
+    it('does not render an underline overlay for multiline fields', () => {
+      const textField = mountWithApp(
+        <TextField
+          label="TextField"
+          value="LO-123"
+          onLink={jest.fn()}
+          autoComplete="off"
+          multiline
+        />,
+      );
+
+      expect(textField).not.toContainReactComponent('div', {
+        className: styles.linkTextUnderline,
+      });
+    });
+
+    it('keeps the underline overlay mounted while the field is focused, so its geometry survives blur', () => {
+      const textField = mountWithApp(
+        <TextField
+          label="TextField"
+          value="LO-123"
+          onLink={jest.fn()}
+          autoComplete="off"
+        />,
+      );
+
+      expect(textField).toContainReactComponent('div', {
+        className: styles.linkTextUnderline,
+      });
+
+      textField.find('input')!.trigger('onFocus');
+
+      expect(textField).toContainReactComponent('div', {
+        className: styles.linkTextUnderline,
+      });
+
+      textField.find('input')!.trigger('onBlur');
+
+      expect(textField).toContainReactComponent('div', {
+        className: styles.linkTextUnderline,
+      });
+    });
+
+    it('calls onLink when the value text is clicked, without focusing the input', () => {
+      const onLink = jest.fn();
+      const textField = mountWithApp(
+        <TextField
+          label="TextField"
+          value="LO-123"
+          onLink={onLink}
+          autoComplete="off"
+        />,
+      );
+
+      const underline = textField.find('div', {
+        className: styles.linkTextUnderline,
+      })!;
+      const mouseDownEvent = new MouseEvent('mousedown', {
+        view: window,
+        bubbles: true,
+        cancelable: true,
+      });
+      underline.domNode?.dispatchEvent(mouseDownEvent);
+      const clickEvent = new MouseEvent('click', {
+        view: window,
+        bubbles: true,
+        cancelable: true,
+      });
+      underline.domNode?.dispatchEvent(clickEvent);
+
+      expect(onLink).toHaveBeenCalledTimes(1);
+      expect(document.activeElement).not.toBe(textField.find('input')!.domNode);
+    });
+  });
+
   describe('onChange()', () => {
     it('is called with the new value', () => {
       const spy = jest.fn();
