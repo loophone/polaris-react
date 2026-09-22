@@ -20,7 +20,7 @@ export interface LabelledProps {
   /** Error to display beneath the label */
   error?: Error | boolean;
   /** An action */
-  action?: Action;
+  action?: Action | React.ReactNode;
   /** Additional hint text to display */
   helpText?: React.ReactNode;
   /** Content to display inside the connected */
@@ -56,7 +56,11 @@ export function Labelled({
 
   const actionMarkup = action ? (
     <div className={styles.Action}>
-      {buttonFrom(action, {variant: 'plain'})}
+      {typeof action === 'object' &&
+      'content' in action &&
+      !React.isValidElement(action)
+        ? buttonFrom(action as Action, {variant: 'plain'})
+        : (action as React.ReactNode)}
     </div>
   ) : null;
 
