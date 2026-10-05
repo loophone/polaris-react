@@ -1,12 +1,14 @@
-import React, {useContext, useState, useRef, useId} from 'react';
+import React, {useContext, useEffect, useState, useRef, useId} from 'react';
 import type {MouseEvent, ReactNode} from 'react';
 
 import {useIsomorphicLayoutEffect} from '../../../../utilities/use-isomorphic-layout-effect';
 import {classNames} from '../../../../utilities/css';
 import {NavigationContext} from '../../context';
 import {Badge} from '../../../Badge';
+import {ActionList} from '../../../ActionList';
 import {Icon} from '../../../Icon';
 import {Indicator} from '../../../Indicator';
+import {Portal} from '../../../Portal';
 import {Text} from '../../../Text';
 import type {TextProps} from '../../../Text';
 import {UnstyledButton} from '../../../UnstyledButton';
@@ -21,6 +23,8 @@ import {SecondaryNavigation} from './components';
 
 export const MAX_SECONDARY_ACTIONS = 2;
 const TOOLTIP_HOVER_DELAY = 1000;
+const SUB_NAVIGATION_CLOSE_DELAY = 150;
+const SUB_NAVIGATION_GAP = 8;
 
 export function Item({
   url,
@@ -55,9 +59,80 @@ export function Item({
   const i18n = useI18n();
   // const {isNavigationCollapsed} = useMediaQuery();
   const secondaryNavigationId = useId();
-  const {location, onNavigationDismiss} = useContext(NavigationContext);
+  const {
+    location,
+    onNavigationDismiss,
+    collapsed,
+    toggleCollapsed,
+    activeCollapsedSubNavigationId,
+    setActiveCollapsedSubNavigationId,
+  } = useContext(NavigationContext);
   const navTextRef = useRef<HTMLSpanElement>(null);
+  const listItemRef = useRef<HTMLLIElement>(null);
+  const collapsedSubNavigationRef = useRef<HTMLDivElement>(null);
+  const closeSubNavigationTimeout = useRef<
+    ReturnType<typeof setTimeout> | undefined
+  >(undefined);
   const [isTruncated, setIsTruncated] = useState(false);
+  const [showCollapsedSubNavigation, setShowCollapsedSubNavigation] =
+    useState(false);
+  const [subNavigationPosition, setSubNavigationPosition] = useState({
+    top: 0,
+    left: 0,
+  });
+
+  const hasCollapsedSubNavigation =
+    collapsed && level === 0 && subNavigationItems.length > 0 && !disabled;
+  const collapsedSubNavigationIsActive =
+    activeCollapsedSubNavigationId === undefined
+      ? showCollapsedSubNavigation
+      : activeCollapsedSubNavigationId === secondaryNavigationId &&
+        showCollapsedSubNavigation;
+
+  useEffect(() => {
+    if (!collapsed) {
+      setShowCollapsedSubNavigation(false);
+    }
+  }, [collapsed]);
+
+  useEffect(() => () => clearTimeout(closeSubNavigationTimeout.current), []);
+
+  useIsomorphicLayoutEffect(() => {
+    if (!hasCollapsedSubNavigation || !collapsedSubNavigationIsActive) return;
+
+    const updatePosition = () => {
+      const anchor = listItemRef.current;
+      const panel = collapsedSubNavigationRef.current;
+      if (!anchor || !panel) return;
+
+      const anchorRect = anchor.getBoundingClientRect();
+      const panelRect = panel.getBoundingClientRect();
+      setSubNavigationPosition({
+        top: Math.max(
+          SUB_NAVIGATION_GAP,
+          Math.min(
+            anchorRect.top,
+            window.innerHeight - panelRect.height - SUB_NAVIGATION_GAP,
+          ),
+        ),
+        left: Math.max(
+          SUB_NAVIGATION_GAP,
+          Math.min(
+            anchorRect.right + SUB_NAVIGATION_GAP,
+            window.innerWidth - panelRect.width - SUB_NAVIGATION_GAP,
+          ),
+        ),
+      });
+    };
+
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, true);
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+    };
+  }, [hasCollapsedSubNavigation, collapsedSubNavigationIsActive]);
 
   // @loophone modified - always expand when there are sub navigation items
   // useEffect(() => {
@@ -111,16 +186,28 @@ export function Item({
   const icon =
     selected || childIsActive ? matchedItemIcon ?? baseIcon : baseIcon;
 
-  const iconMarkup = icon ? (
-    <div
-      className={classNames(
-        styles.Icon,
-        shouldResizeIcon && styles['Icon-resized'],
-      )}
-    >
-      <Icon source={icon} />
-    </div>
-  ) : null;
+  let iconMarkup: ReactNode = null;
+  if (icon) {
+    iconMarkup = (
+      <div
+        className={classNames(
+          styles.Icon,
+          shouldResizeIcon && styles['Icon-resized'],
+        )}
+      >
+        <Icon source={icon} />
+      </div>
+    );
+  } else if (collapsed && level === 0) {
+    iconMarkup = (
+      <span
+        className={classNames(styles.Icon, styles.FallbackIcon)}
+        aria-hidden
+      >
+        {label.slice(0, 1)}
+      </span>
+    );
+  }
 
   let badgeMarkup: ReactNode = null;
   if (isNew) {
@@ -248,6 +335,11 @@ export function Item({
   );
 
   const showExpanded = selected || expanded || childIsActive;
+  const showOpenParent = selected && childIsActive && !collapsed;
+  const showSelectedParent = selected || (collapsed && childIsActive);
+  const longestMatch = matchingSubNavigationItems.sort(
+    ({url: firstUrl}, {url: secondUrl}) => secondUrl.length - firstUrl.length,
+  )[0];
 
   const itemClassName = classNames(
     styles.Item,
@@ -263,10 +355,6 @@ export function Item({
   let secondaryNavigationMarkup: ReactNode = null;
 
   if (subNavigationItems.length > 0) {
-    const longestMatch = matchingSubNavigationItems.sort(
-      ({url: firstUrl}, {url: secondUrl}) => secondUrl.length - firstUrl.length,
-    )[0];
-
     secondaryNavigationMarkup = (
       <SecondaryNavigation
         ItemComponent={Item}
@@ -279,6 +367,45 @@ export function Item({
       />
     );
   }
+
+  const collapsedSubNavigationMarkup =
+    hasCollapsedSubNavigation && collapsedSubNavigationIsActive ? (
+      <Portal idPrefix="navigation-submenu">
+        <div
+          ref={collapsedSubNavigationRef}
+          className={styles.CollapsedSubNavigation}
+          style={subNavigationPosition}
+          role="group"
+          aria-label={label}
+          onMouseEnter={() => clearTimeout(closeSubNavigationTimeout.current)}
+          onMouseLeave={scheduleCloseSubNavigation}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') {
+              closeCollapsedSubNavigation();
+              listItemRef.current?.querySelector('a')?.focus();
+            }
+          }}
+        >
+          <ActionList
+            actionRole="menuitem"
+            items={subNavigationItems.map((item) => ({
+              content: item.label,
+              url: item.url,
+              external: item.external,
+              disabled: item.disabled,
+              active: item === longestMatch,
+              onAction: () => {
+                onNavigationDismiss?.();
+                if (item.onClick !== onNavigationDismiss) {
+                  item.onClick?.();
+                }
+              },
+            }))}
+            onActionAnyItem={closeCollapsedSubNavigation}
+          />
+        </div>
+      </Portal>
+    ) : null;
 
   const className = classNames(
     styles.ListItem,
@@ -293,19 +420,20 @@ export function Item({
         external={external}
         tabIndex={tabIndex}
         aria-disabled={disabled}
-        aria-label={accessibilityLabel}
+        aria-label={accessibilityLabel ?? (collapsed ? label : undefined)}
         onClick={getClickHandler(onClick)}
         {...normalizeAriaAttributes(
           secondaryNavigationId,
           subNavigationItems.length > 0,
-          showExpanded,
+          showExpanded && !collapsed,
         )}
       >
         {itemContentMarkup}
       </UnstyledLink>
     );
 
-    return isTruncated ? (
+    return isTruncated ||
+      (collapsed && level === 0 && !hasCollapsedSubNavigation) ? (
       <Tooltip
         hoverDelay={TOOLTIP_HOVER_DELAY}
         content={label}
@@ -320,20 +448,31 @@ export function Item({
 
   return (
     <li
+      ref={listItemRef}
       className={className}
       onMouseEnter={() => {
         onMouseEnter?.(label);
+        if (hasCollapsedSubNavigation) {
+          openCollapsedSubNavigation();
+        } else if (collapsed && level === 0) {
+          setActiveCollapsedSubNavigationId?.(null);
+        }
       }}
-      onMouseLeave={onMouseLeave}
+      onMouseLeave={() => {
+        onMouseLeave?.();
+        if (hasCollapsedSubNavigation) {
+          scheduleCloseSubNavigation();
+        }
+      }}
     >
       <div className={styles.ItemWrapper}>
         <div
           className={classNames(
             styles.ItemInnerWrapper,
-            (selected && childIsActive && styles['ItemInnerWrapper-open']) ||
-              (selected &&
-                !childIsActive &&
-                styles['ItemInnerWrapper-selected']),
+            showOpenParent && styles['ItemInnerWrapper-open'],
+            showSelectedParent &&
+              !showOpenParent &&
+              styles['ItemInnerWrapper-selected'],
             displayActionsOnHover &&
               styles['ItemInnerWrapper-display-actions-on-hover'],
             disabled && styles.ItemInnerDisabled,
@@ -356,8 +495,37 @@ export function Item({
         </div>
       </div>
       {secondaryNavigationMarkup}
+      {collapsedSubNavigationMarkup}
     </li>
   );
+
+  function openCollapsedSubNavigation() {
+    clearTimeout(closeSubNavigationTimeout.current);
+    const anchorRect = listItemRef.current?.getBoundingClientRect();
+    if (!anchorRect) return;
+    setSubNavigationPosition({
+      top: anchorRect.top,
+      left: anchorRect.right + SUB_NAVIGATION_GAP,
+    });
+    setShowCollapsedSubNavigation(true);
+    setActiveCollapsedSubNavigationId?.(secondaryNavigationId);
+  }
+
+  function closeCollapsedSubNavigation() {
+    clearTimeout(closeSubNavigationTimeout.current);
+    setShowCollapsedSubNavigation(false);
+    setActiveCollapsedSubNavigationId?.((current) =>
+      current === secondaryNavigationId ? null : current,
+    );
+  }
+
+  function scheduleCloseSubNavigation() {
+    clearTimeout(closeSubNavigationTimeout.current);
+    closeSubNavigationTimeout.current = setTimeout(
+      closeCollapsedSubNavigation,
+      SUB_NAVIGATION_CLOSE_DELAY,
+    );
+  }
 
   function getClickHandler(onClick: ItemProps['onClick']) {
     return (event: MouseEvent<HTMLElement>) => {
@@ -375,6 +543,13 @@ export function Item({
       // ) {
       if (subNavigationItems && subNavigationItems.length > 0) {
         event.preventDefault();
+        if (collapsed) {
+          toggleCollapsed?.();
+          if (!showExpanded) {
+            onToggleExpandedState?.();
+          }
+          return;
+        }
         onToggleExpandedState?.();
       } else if (onNavigationDismiss) {
         onNavigationDismiss();

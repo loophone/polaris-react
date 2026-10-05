@@ -64,6 +64,7 @@ type CombinedProps = FrameProps & {
 };
 
 interface State {
+  navigationCollapsed: boolean;
   skipFocused?: boolean;
   globalRibbonHeight: number;
   loadingStack: number;
@@ -79,6 +80,7 @@ const APP_FRAME_LOADING_BAR = 'AppFrameLoadingBar';
 
 class FrameInner extends PureComponent<CombinedProps, State> {
   state: State = {
+    navigationCollapsed: false,
     skipFocused: false,
     globalRibbonHeight: 0,
     loadingStack: 0,
@@ -245,6 +247,7 @@ class FrameInner extends PureComponent<CombinedProps, State> {
       classNames(
         styles.Frame,
         navigation && styles.hasNav,
+        this.state.navigationCollapsed && styles['Frame-navigationCollapsed'],
         topBar && styles.hasTopBar,
         sidebar && styles.hasSidebar,
         this.state.scrollbarAlwaysVisible && styles.ScrollbarAlwaysVisible,
@@ -273,6 +276,8 @@ class FrameInner extends PureComponent<CombinedProps, State> {
     // eslint-disable-next-line react/jsx-no-constructed-context-values
     const context = {
       logo,
+      navigationCollapsed: this.state.navigationCollapsed,
+      setNavigationCollapsed: this.setNavigationCollapsed,
       showToast: this.showToast,
       hideToast: this.hideToast,
       toastMessages,
@@ -327,6 +332,10 @@ class FrameInner extends PureComponent<CombinedProps, State> {
   private setOffset = () => {
     const {offset = '0px'} = this.props;
     setRootProperty('--pc-frame-offset', offset);
+  };
+
+  private setNavigationCollapsed = (collapsed: boolean) => {
+    this.setState({navigationCollapsed: collapsed});
   };
 
   private setScrollbarAlwaysVisible = () => {

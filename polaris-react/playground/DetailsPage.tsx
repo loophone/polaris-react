@@ -296,7 +296,7 @@ export const DetailsPage = {
     );
     // ---- Navigation ----
     const navigationMarkup = (
-      <Navigation location="/" contextControl={contextControlMarkup}>
+      <Navigation location="/">
         <Navigation.Section
           items={[
             {

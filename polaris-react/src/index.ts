@@ -263,6 +263,7 @@ export type {ModalProps} from './components/Modal';
 export {Navigation, isNavigationItemActive} from './components/Navigation';
 export type {
   NavigationProps,
+  NavigationFooterRenderProps,
   NavigationItemProps,
   SubNavigationItem,
 } from './components/Navigation';

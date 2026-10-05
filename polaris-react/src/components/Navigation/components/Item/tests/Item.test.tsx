@@ -7,11 +7,13 @@ import type {WithPolarisTestProviderOptions} from '../../../../PolarisTestProvid
 import {PolarisTestProvider} from '../../../../PolarisTestProvider';
 import type {MediaQueryContext} from '../../../../../utilities/media-query';
 import {Badge} from '../../../../Badge';
+import {ActionList} from '../../../../ActionList';
 import {Icon} from '../../../../Icon';
 import {Indicator} from '../../../../Indicator';
 import {UnstyledButton} from '../../../../UnstyledButton';
 import {UnstyledLink} from '../../../../UnstyledLink';
 import {NavigationContext} from '../../../context';
+import styles from '../../../Navigation.module.css';
 import {Item, ItemSecondaryAction, MAX_SECONDARY_ACTIONS} from '../Item';
 import type {ItemProps} from '../../../types';
 import {SecondaryNavigation} from '../components';
@@ -180,6 +182,80 @@ describe('<Nav.Item />', () => {
     expect(item).toContainReactComponent(Icon, {
       source: StarIcon,
     });
+  });
+
+  it('shows the selected parent background when a child is active and navigation is collapsed', () => {
+    const item = mountWithNavigationProvider(
+      <Item
+        label="Orders"
+        url="/admin/orders"
+        subNavigationItems={[{label: 'Draft orders', url: '/admin/drafts'}]}
+      />,
+      {location: '/admin/drafts', collapsed: true},
+    );
+    const parentWrapper = item
+      .findAll('div')
+      .find((element) =>
+        element.prop('className')?.split(' ').includes(styles.ItemInnerWrapper),
+      );
+
+    expect(parentWrapper?.prop('className')).toContain(
+      styles['ItemInnerWrapper-selected'],
+    );
+  });
+
+  it('switches the collapsed submenu immediately when another parent is hovered', () => {
+    function CollapsedNavigation() {
+      const [activeId, setActiveId] = React.useState<string | null>(null);
+
+      return (
+        <NavigationContext.Provider
+          value={{
+            location: '/admin/drafts',
+            collapsed: true,
+            activeCollapsedSubNavigationId: activeId,
+            setActiveCollapsedSubNavigationId: setActiveId,
+          }}
+        >
+          <ul>
+            <Item
+              label="Orders"
+              url="/admin/orders"
+              subNavigationItems={[
+                {label: 'Draft orders', url: '/admin/drafts'},
+              ]}
+            />
+            <Item
+              label="Products"
+              url="/admin/products"
+              subNavigationItems={[
+                {label: 'All products', url: '/admin/products/all'},
+              ]}
+            />
+          </ul>
+        </NavigationContext.Provider>
+      );
+    }
+
+    const navigation = mountWithApp(<CollapsedNavigation />);
+    navigation
+      .findAll(Item)
+      .find((item) => item.prop('label') === 'Orders')!
+      .find('li')!
+      .trigger('onMouseEnter');
+    expect(navigation.find(ActionList)?.prop('items')).toStrictEqual([
+      expect.objectContaining({content: 'Draft orders', active: true}),
+    ]);
+
+    navigation
+      .findAll(Item)
+      .find((item) => item.prop('label') === 'Products')!
+      .find('li')!
+      .trigger('onMouseEnter');
+    expect(navigation.findAll(ActionList)).toHaveLength(1);
+    expect(navigation.find(ActionList)?.prop('items')).toStrictEqual([
+      expect.objectContaining({content: 'All products', active: false}),
+    ]);
   });
 
   describe('with secondaryAction', () => {

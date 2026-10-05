@@ -19,12 +19,221 @@ import {
   HomeFilledIcon,
   ProductFilledIcon,
   TargetFilledIcon,
+  QuestionCircleIcon,
+  SettingsIcon,
+  SettingsFilledIcon,
 } from '@shopify/polaris-icons';
+
+import {shopifyGlyph} from './assets';
 
 export default {
   component: Navigation,
   parameters: {layout: 'fullscreen'},
 } as Meta<typeof Navigation>;
+
+const darkNavigationStyle = {
+  '--p-color-nav-bg': 'var(--p-color-bg-inverse)',
+  '--p-color-nav-bg-surface-hover': 'var(--p-color-bg-fill-inverse-hover)',
+  '--p-color-nav-bg-surface-active': 'var(--p-color-bg-fill-inverse-active)',
+  '--p-color-nav-bg-surface-selected': 'var(--p-color-bg-fill-inverse)',
+  '--p-color-text': 'var(--p-color-text-inverse-secondary)',
+  '--p-color-text-secondary': 'var(--p-color-text-inverse-secondary)',
+  '--p-color-text-brand': 'var(--p-color-text-inverse)',
+  '--p-color-text-brand-hover': 'var(--p-color-text-inverse)',
+  '--p-color-text-disabled': 'var(--p-color-text-inverse-secondary)',
+  '--p-color-icon': 'var(--p-color-text-inverse-secondary)',
+  '--p-color-icon-hover': 'var(--p-color-icon-inverse)',
+  '--p-color-icon-active': 'var(--p-color-icon-inverse)',
+  '--p-color-icon-brand': 'var(--p-color-icon-inverse)',
+  '--p-color-border-secondary': 'var(--p-color-border-inverse)',
+  '--p-color-bg-surface-hover': 'var(--p-color-bg-fill-inverse-hover)',
+  '--p-color-bg-surface-active': 'var(--p-color-bg-fill-inverse-active)',
+  '--pc-navigation-item-text-hover': 'var(--p-color-text-inverse)',
+  '--pc-navigation-item-text-selected': 'var(--p-color-text-inverse)',
+  '--pc-navigation-item-icon-hover': 'var(--p-color-icon-inverse)',
+} as React.CSSProperties;
+
+function CollapsibleSidebarStory({dark = false}: {dark?: boolean}) {
+  const [selected, setSelected] = React.useState('Draft orders');
+  const select = (label: string) => () => setSelected(label);
+  const footer = (
+    <Navigation.Section
+      title="Account"
+      items={[
+        {
+          label: 'Help center',
+          icon: QuestionCircleIcon,
+          url: '#',
+          selected: selected === 'Help center',
+          onClick: select('Help center'),
+        },
+        {
+          label: 'Settings',
+          icon: SettingsIcon,
+          matchedItemIcon: SettingsFilledIcon,
+          url: '#',
+          selected: selected === 'Settings',
+          onClick: select('Settings'),
+        },
+      ]}
+    />
+  );
+
+  return (
+    <Frame
+      navigation={
+        <Navigation
+          location="/"
+          footer={footer}
+          style={dark ? darkNavigationStyle : undefined}
+        >
+          <Navigation.Logo logo={<img src={shopifyGlyph} alt="Shopify" />} />
+          <Navigation.Section
+            title="Store"
+            items={[
+              {
+                label: 'Home',
+                icon: HomeIcon,
+                matchedItemIcon: HomeFilledIcon,
+                url: '#',
+                selected: selected === 'Home',
+                onClick: select('Home'),
+              },
+              {
+                label: 'Orders',
+                icon: OrderIcon,
+                matchedItemIcon: OrderFilledIcon,
+                badge: '12',
+                url: '#',
+                subNavigationItems: [
+                  {
+                    label: 'All orders',
+                    url: '#',
+                    matches: selected === 'All orders',
+                    onClick: select('All orders'),
+                  },
+                  {
+                    label: 'Draft orders',
+                    url: '#',
+                    matches: selected === 'Draft orders',
+                    onClick: select('Draft orders'),
+                  },
+                  {
+                    label: 'Abandoned checkouts',
+                    url: '#',
+                    matches: selected === 'Abandoned checkouts',
+                    onClick: select('Abandoned checkouts'),
+                  },
+                ],
+              },
+              {
+                label: 'Products',
+                icon: ProductIcon,
+                matchedItemIcon: ProductFilledIcon,
+                url: '#',
+                subNavigationItems: [
+                  {
+                    label: 'All products',
+                    url: '#',
+                    matches: selected === 'All products',
+                    onClick: select('All products'),
+                  },
+                  {
+                    label: 'Collections',
+                    url: '#',
+                    matches: selected === 'Collections',
+                    onClick: select('Collections'),
+                  },
+                  {
+                    label: 'Inventory',
+                    url: '#',
+                    matches: selected === 'Inventory',
+                    onClick: select('Inventory'),
+                  },
+                ],
+              },
+              {
+                label: 'Customers',
+                icon: PersonIcon,
+                url: '#',
+                selected: selected === 'Customers',
+                onClick: select('Customers'),
+              },
+              {
+                label: 'Marketing',
+                icon: TargetIcon,
+                url: '#',
+                subNavigationItems: [
+                  {
+                    label: 'Campaigns',
+                    url: '#',
+                    matches: selected === 'Campaigns',
+                    onClick: select('Campaigns'),
+                  },
+                  {
+                    label: 'Automations',
+                    url: '#',
+                    matches: selected === 'Automations',
+                    onClick: select('Automations'),
+                  },
+                ],
+              },
+            ]}
+          />
+          <Navigation.Section
+            title="Sales channels"
+            items={[
+              {
+                label: 'Online store',
+                icon: StoreOnlineIcon,
+                url: '#',
+                subNavigationItems: [
+                  {
+                    label: 'Themes',
+                    url: '#',
+                    matches: selected === 'Themes',
+                    onClick: select('Themes'),
+                  },
+                  {
+                    label: 'Pages',
+                    url: '#',
+                    matches: selected === 'Pages',
+                    onClick: select('Pages'),
+                  },
+                  {
+                    label: 'Blog posts',
+                    url: '#',
+                    matches: selected === 'Blog posts',
+                    onClick: select('Blog posts'),
+                  },
+                ],
+              },
+            ]}
+          />
+        </Navigation>
+      }
+    >
+      <div style={{padding: 24}}>
+        <Text as="h1" variant="headingLg">
+          Collapsible navigation
+        </Text>
+        <Text as="p">Selected: {selected}</Text>
+        <Text as="p">
+          Try expanding the groups, selecting a sub-item, and collapsing the
+          sidebar.
+        </Text>
+      </div>
+    </Frame>
+  );
+}
+
+export const CollapsibleSidebar = {
+  render: () => <CollapsibleSidebarStory />,
+};
+
+export const DarkCollapsibleSidebar = {
+  render: () => <CollapsibleSidebarStory dark />,
+};
 
 export const Default = {
   render() {

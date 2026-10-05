@@ -3,19 +3,11 @@ import {mountWithApp} from 'tests/utilities';
 
 import {Navigation} from '../Navigation';
 import {NavigationContext} from '../context';
+import {Frame} from '../../Frame';
 import {Image} from '../../Image';
 import {WithinContentContext} from '../../../utilities/within-content-context';
 
-jest.mock('../../../utilities/breakpoints', () => ({
-  ...(jest.requireActual('../../../utilities/breakpoints') as any),
-  useBreakpoints: jest.fn(),
-}));
-
 describe('<Navigation />', () => {
-  beforeEach(() => {
-    mockUseBreakpoints(false);
-  });
-
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -38,28 +30,107 @@ describe('<Navigation />', () => {
     });
   });
 
-  it('will render logo suffix when `logoSuffix` is provided', () => {
-    mockUseBreakpoints(true);
-    const LogoSuffix = () => <div>Suffix</div>;
+  it('renders the footer outside the scrollable navigation items', () => {
     const navigation = mountWithApp(
-      <Navigation location="/" logoSuffix={<LogoSuffix />} />,
-      {
-        frame: {logo: {url: 'https://shopify.com/logo'}},
-      },
+      <Navigation
+        location="/"
+        footer={
+          <Navigation.Section items={[{label: 'Settings', url: '/settings'}]} />
+        }
+      >
+        <Navigation.Section items={[{label: 'Orders', url: '/orders'}]} />
+      </Navigation>,
     );
-    expect(navigation).toContainReactComponent(LogoSuffix);
+
+    const nav = navigation.find('nav')?.domNode;
+    const scrolling = nav?.querySelector('.PrimaryNavigation');
+    const footer = nav?.querySelector('.NavigationFooter');
+
+    expect(footer).not.toBeNull();
+    expect(scrolling?.contains(footer as Node)).toBe(false);
+    expect(footer?.textContent).toContain('Settings');
   });
 
-  it('will not render logo suffix when `logoSuffix` is provided but mdUp is false', () => {
-    mockUseBreakpoints(false);
-    const LogoSuffix = () => <div>Suffix</div>;
+  it('updates a rendered footer when the navigation collapses', () => {
     const navigation = mountWithApp(
-      <Navigation location="/" logoSuffix={<LogoSuffix />} />,
-      {
-        frame: {logo: {url: 'https://shopify.com/logo'}},
-      },
+      <Frame
+        navigation={
+          <Navigation
+            location="/"
+            footer={({collapsed}) => (
+              <span>{collapsed ? 'Account avatar' : 'Account details'}</span>
+            )}
+          >
+            <Navigation.Logo logo={<span>Shop</span>} />
+          </Navigation>
+        }
+      />,
     );
-    expect(navigation).not.toContainReactComponent(LogoSuffix);
+
+    const footerText = () =>
+      navigation.find('nav')?.domNode?.querySelector('.NavigationFooter')
+        ?.textContent;
+
+    expect(footerText()).toBe('Account details');
+
+    navigation
+      .find('button', {'aria-label': 'Collapse navigation'})
+      ?.trigger('onClick');
+    expect(footerText()).toBe('Account avatar');
+
+    navigation
+      .find('button', {'aria-label': 'Expand navigation'})
+      ?.trigger('onClick');
+    expect(footerText()).toBe('Account details');
+  });
+
+  it('toggles the desktop sidebar and frame spacing from the logo button', () => {
+    const navigation = mountWithApp(
+      <Frame
+        navigation={
+          <Navigation location="/">
+            <Navigation.Logo logo={<span>Shop</span>} />
+            <Navigation.Section items={[{label: 'Orders'}]} />
+          </Navigation>
+        }
+      />,
+    );
+
+    const frame = navigation.find('div', {'data-has-navigation': true} as any);
+    const nav = navigation.find('nav');
+
+    expect(nav?.domNode?.classList.contains('Navigation-collapsed')).toBe(
+      false,
+    );
+    expect(
+      frame?.domNode?.classList.contains('Frame-navigationCollapsed'),
+    ).toBe(false);
+
+    navigation
+      .find('button', {'aria-label': 'Collapse navigation'})
+      ?.trigger('onClick');
+
+    expect(nav?.domNode?.classList.contains('Navigation-collapsed')).toBe(true);
+    expect(
+      frame?.domNode?.classList.contains('Frame-navigationCollapsed'),
+    ).toBe(true);
+    expect(nav?.domNode?.querySelector('[aria-label="Orders"]')).not.toBeNull();
+    expect(nav?.domNode?.querySelector('.FallbackIcon')?.textContent).toBe('O');
+    expect(navigation).toContainReactComponent('button', {
+      'aria-label': 'Expand navigation',
+      'aria-pressed': true,
+    });
+
+    navigation
+      .find('button', {'aria-label': 'Expand navigation'})
+      ?.trigger('onClick');
+
+    expect(nav?.domNode?.classList.contains('Navigation-collapsed')).toBe(
+      false,
+    );
+    expect(
+      frame?.domNode?.classList.contains('Frame-navigationCollapsed'),
+    ).toBe(false);
   });
 
   describe('context', () => {
@@ -105,45 +176,4 @@ describe('<Navigation />', () => {
       expect(navigation.find(Child)).toContainReactComponentTimes('div', 1);
     });
   });
-
-  describe('contextControl', () => {
-    it('doesn’t render by default', () => {
-      const navigation = mountWithApp(<Navigation location="/" />);
-      expect(navigation).not.toContainReactComponent('div', {
-        className: 'ContextControl',
-      });
-    });
-
-    it('renders the given context control', () => {
-      mockUseBreakpoints(true);
-      const contextControl = <div />;
-      const navigation = mountWithApp(
-        <Navigation location="/" contextControl={contextControl} />,
-      );
-      expect(navigation).toContainReactComponent('div', {
-        className: 'ContextControl',
-      });
-    });
-
-    it('does not render the given context control if mdUp is false', () => {
-      mockUseBreakpoints(false);
-      const contextControl = <div />;
-      const navigation = mountWithApp(
-        <Navigation location="/" contextControl={contextControl} />,
-      );
-      expect(navigation).not.toContainReactComponent('div', {
-        className: 'ContextControl',
-      });
-    });
-  });
 });
-
-function mockUseBreakpoints(mdUp: boolean) {
-  const useBreakpoints: jest.Mock = jest.requireMock(
-    '../../../utilities/breakpoints',
-  ).useBreakpoints;
-
-  useBreakpoints.mockReturnValue({
-    mdUp,
-  });
-}

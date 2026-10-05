@@ -10,6 +10,8 @@ import type {
 // This is internal, but TS throws a build-time error if we don't export it
 export interface FrameContextType {
   logo?: Logo;
+  navigationCollapsed?: boolean;
+  setNavigationCollapsed?(collapsed: boolean): void;
   showToast(toast: ToastPropsWithID): void;
   hideToast(toast: ToastID): void;
   toastMessages: ToastPropsWithID[];
