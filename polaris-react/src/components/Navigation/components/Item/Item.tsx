@@ -395,6 +395,9 @@ export function Item({
               disabled: item.disabled,
               active: item === longestMatch,
               onAction: () => {
+                if (!expanded) {
+                  onToggleExpandedState?.();
+                }
                 onNavigationDismiss?.();
                 if (item.onClick !== onNavigationDismiss) {
                   item.onClick?.();
@@ -545,7 +548,7 @@ export function Item({
         event.preventDefault();
         if (collapsed) {
           toggleCollapsed?.();
-          if (!showExpanded) {
+          if (!expanded) {
             onToggleExpandedState?.();
           }
           return;

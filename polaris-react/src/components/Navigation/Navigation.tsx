@@ -23,6 +23,8 @@ export interface NavigationProps {
   location: string;
   children?: React.ReactNode;
   style?: React.CSSProperties;
+  /** Use the dark navigation palette and typography. Defaults to the standard appearance. */
+  appearance?: 'default' | 'dark';
   /** Content pinned below the scrollable navigation items. Use a function to adapt it to the collapsed state. */
   footer?:
     | React.ReactNode
@@ -41,6 +43,7 @@ export const Navigation: React.FunctionComponent<NavigationProps> & {
   footer,
   location,
   style,
+  appearance = 'default',
   onDismiss,
   ariaLabelledBy,
 }: NavigationProps) {
@@ -93,6 +96,7 @@ export const Navigation: React.FunctionComponent<NavigationProps> & {
           className={classNames(
             styles.Navigation,
             collapsed && styles['Navigation-collapsed'],
+            appearance === 'dark' && styles['Navigation-dark'],
           )}
           aria-labelledby={ariaLabelledBy}
           style={style}

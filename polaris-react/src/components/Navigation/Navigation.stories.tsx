@@ -31,30 +31,8 @@ export default {
   parameters: {layout: 'fullscreen'},
 } as Meta<typeof Navigation>;
 
-const darkNavigationStyle = {
-  '--p-color-nav-bg': 'var(--p-color-bg-inverse)',
-  '--p-color-nav-bg-surface-hover': 'var(--p-color-bg-fill-inverse-hover)',
-  '--p-color-nav-bg-surface-active': 'var(--p-color-bg-fill-inverse-active)',
-  '--p-color-nav-bg-surface-selected': 'var(--p-color-bg-fill-inverse)',
-  '--p-color-text': 'var(--p-color-text-inverse-secondary)',
-  '--p-color-text-secondary': 'var(--p-color-text-inverse-secondary)',
-  '--p-color-text-brand': 'var(--p-color-text-inverse)',
-  '--p-color-text-brand-hover': 'var(--p-color-text-inverse)',
-  '--p-color-text-disabled': 'var(--p-color-text-inverse-secondary)',
-  '--p-color-icon': 'var(--p-color-text-inverse-secondary)',
-  '--p-color-icon-hover': 'var(--p-color-icon-inverse)',
-  '--p-color-icon-active': 'var(--p-color-icon-inverse)',
-  '--p-color-icon-brand': 'var(--p-color-icon-inverse)',
-  '--p-color-border-secondary': 'var(--p-color-border-inverse)',
-  '--p-color-bg-surface-hover': 'var(--p-color-bg-fill-inverse-hover)',
-  '--p-color-bg-surface-active': 'var(--p-color-bg-fill-inverse-active)',
-  '--pc-navigation-item-text-hover': 'var(--p-color-text-inverse)',
-  '--pc-navigation-item-text-selected': 'var(--p-color-text-inverse)',
-  '--pc-navigation-item-icon-hover': 'var(--p-color-icon-inverse)',
-} as React.CSSProperties;
-
 function CollapsibleSidebarStory({dark = false}: {dark?: boolean}) {
-  const [selected, setSelected] = React.useState('Draft orders');
+  const [selected, setSelected] = React.useState('');
   const select = (label: string) => () => setSelected(label);
   const footer = (
     <Navigation.Section
@@ -85,7 +63,7 @@ function CollapsibleSidebarStory({dark = false}: {dark?: boolean}) {
         <Navigation
           location="/"
           footer={footer}
-          style={dark ? darkNavigationStyle : undefined}
+          appearance={dark ? 'dark' : undefined}
         >
           <Navigation.Logo logo={<img src={shopifyGlyph} alt="Shopify" />} />
           <Navigation.Section
@@ -105,6 +83,7 @@ function CollapsibleSidebarStory({dark = false}: {dark?: boolean}) {
                 matchedItemIcon: OrderFilledIcon,
                 badge: '12',
                 url: '#',
+                selected: false,
                 subNavigationItems: [
                   {
                     label: 'All orders',
@@ -131,6 +110,7 @@ function CollapsibleSidebarStory({dark = false}: {dark?: boolean}) {
                 icon: ProductIcon,
                 matchedItemIcon: ProductFilledIcon,
                 url: '#',
+                selected: false,
                 subNavigationItems: [
                   {
                     label: 'All products',
@@ -163,6 +143,7 @@ function CollapsibleSidebarStory({dark = false}: {dark?: boolean}) {
                 label: 'Marketing',
                 icon: TargetIcon,
                 url: '#',
+                selected: false,
                 subNavigationItems: [
                   {
                     label: 'Campaigns',
@@ -187,6 +168,7 @@ function CollapsibleSidebarStory({dark = false}: {dark?: boolean}) {
                 label: 'Online store',
                 icon: StoreOnlineIcon,
                 url: '#',
+                selected: false,
                 subNavigationItems: [
                   {
                     label: 'Themes',
@@ -217,7 +199,7 @@ function CollapsibleSidebarStory({dark = false}: {dark?: boolean}) {
         <Text as="h1" variant="headingLg">
           Collapsible navigation
         </Text>
-        <Text as="p">Selected: {selected}</Text>
+        <Text as="p">Selected: {selected || 'None'}</Text>
         <Text as="p">
           Try expanding the groups, selecting a sub-item, and collapsing the
           sidebar.

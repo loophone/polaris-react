@@ -42,6 +42,84 @@
   }
 }
 
+.Navigation-dark {
+  /* stylelint-disable -- Scoped dark Navigation palette */
+  --p-color-nav-bg: #0a0a0a;
+  --p-color-nav-bg-surface-hover: #1a1a1a;
+  --p-color-nav-bg-surface-active: #1a1a1a;
+  --p-color-nav-bg-surface-selected: #222222;
+  --p-color-text: #dcdcdc;
+  --p-color-text-secondary: #a6a6a6;
+  --p-color-text-brand: #fcfcfc;
+  --p-color-text-brand-hover: #fcfcfc;
+  --p-color-text-disabled: var(--p-color-text-inverse-secondary);
+  --p-color-icon: #8c8c8c;
+  --p-color-icon-hover: #dcdcdc;
+  --p-color-icon-active: #fcfcfc;
+  --p-color-icon-brand: #fcfcfc;
+  --p-color-border-focus: #97adff;
+  --p-color-border-secondary: var(--p-color-border-inverse);
+  --p-color-bg-surface-hover: #1a1a1a;
+  --p-color-bg-surface-active: #1a1a1a;
+  --p-color-bg-fill-transparent-secondary: rgba(255, 255, 255, 0.05);
+  --pc-navigation-item-text-hover: #fcfcfc;
+  --pc-navigation-item-text-selected: #fcfcfc;
+  --pc-navigation-item-icon-hover: #dcdcdc;
+  /* stylelint-enable */
+
+  /* stylelint-disable selector-max-class, selector-max-combinators -- Align the dark logo in both sidebar states */
+  @media (--p-breakpoints-md-up) {
+    .SidebarHeader {
+      padding-left: 0;
+    }
+
+    .SidebarLogo {
+      display: flex;
+      flex: 0 0 60px;
+      align-items: center;
+      justify-content: center;
+      width: 60px;
+    }
+
+    .SidebarHeader-collapsed .SidebarLogo {
+      justify-self: center;
+      margin-left: 0;
+    }
+  }
+  /* stylelint-enable */
+
+  /* stylelint-disable selector-max-class, selector-max-combinators, selector-max-compound-selectors, selector-max-specificity, polaris/typography/declaration-property-unit-disallowed-list, polaris/typography/polaris/declaration-property-value-disallowed-list -- Navigation dark appearance typography and states */
+  .Text > :first-child {
+    font-size: 13px;
+    font-weight: 450;
+  }
+
+  .Item-selected .Text > :first-child {
+    font-weight: 500;
+  }
+
+  .SectionHeading > :first-child {
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .Item:not(.Item-selected, .subNavigationActive, :hover, :focus-visible) {
+    .Text,
+    .Icon {
+      opacity: 0.68;
+    }
+  }
+
+  .Item-hover-pointer:not(.Item-selected) .Text {
+    color: var(--p-color-text-secondary);
+  }
+
+  &.Navigation-collapsed .ItemInnerWrapper-selected:hover {
+    background: var(--p-color-nav-bg-surface-hover);
+  }
+  /* stylelint-enable */
+}
+
 .Navigation-collapsed {
   @media (--p-breakpoints-md-up) {
     width: 60px;
@@ -177,10 +255,13 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     place-items: center;
+    width: 60px;
     padding: 0;
 
     .SidebarLogo {
       grid-area: 1 / 1;
+      justify-self: start;
+      margin-left: var(--p-space-400);
       transition-delay: var(--p-motion-duration-100);
     }
 
@@ -192,7 +273,7 @@
       transform: scale(0.75);
     }
 
-    &:where(:hover, :has(:focus-visible)) {
+    &:where(:hover:not(.SidebarHeader-collapsing), :has(:focus-visible)) {
       .SidebarLogo {
         opacity: 0;
         transform: scale(0);
@@ -206,6 +287,13 @@
         transition-delay: var(--p-motion-duration-150);
       }
     }
+  }
+}
+
+.SidebarHeader-collapsing {
+  .SidebarLogo,
+  .CollapseButton {
+    transition: none;
   }
 }
 

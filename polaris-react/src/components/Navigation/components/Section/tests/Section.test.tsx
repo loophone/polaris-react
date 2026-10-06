@@ -4,6 +4,7 @@ import {mountWithApp} from 'tests/utilities';
 
 import {PolarisTestProvider} from '../../../../PolarisTestProvider';
 import type {MediaQueryContext} from '../../../../../utilities/media-query';
+import {ActionList} from '../../../../ActionList';
 import {Collapsible} from '../../../../Collapsible';
 import {NavigationContext} from '../../../context';
 import {Item} from '../../Item';
@@ -350,6 +351,103 @@ describe('<Navigation.Section />', () => {
       expanded: false,
     });
     expect(withSubNav.find(Item, {label: 'label c'})).toHaveReactProps({
+      expanded: true,
+    });
+  });
+
+  it('closes the previous group when a collapsed child-active group is clicked', () => {
+    const section = mountWithNavigationProvider(
+      <Section
+        items={[
+          {
+            label: 'Orders',
+            url: '/orders',
+            subNavigationItems: [{label: 'All orders', url: '/orders/all'}],
+          },
+          {
+            label: 'Products',
+            url: '/products',
+            subNavigationItems: [{label: 'All products', url: '/products/all'}],
+          },
+        ]}
+      />,
+      {location: '/products/all', collapsed: true, toggleCollapsed: jest.fn()},
+    );
+
+    section.find(Item, {label: 'Orders'})!.trigger('onToggleExpandedState');
+    expect(section.find(Item, {label: 'Orders'})).toHaveReactProps({
+      expanded: true,
+    });
+    expect(section.find(Item, {label: 'Products'})).toHaveReactProps({
+      expanded: false,
+    });
+
+    section.find('a', {'aria-label': 'Products'})!.trigger('onClick', {
+      preventDefault: noop,
+      currentTarget: {getAttribute: () => '/products'},
+    });
+
+    expect(section.find(Item, {label: 'Orders'})).toHaveReactProps({
+      expanded: false,
+    });
+    expect(section.find(Item, {label: 'Products'})).toHaveReactProps({
+      expanded: true,
+    });
+  });
+
+  it('switches groups when choosing items from collapsed flyout menus', () => {
+    const onAllOrders = jest.fn();
+    const onAllProducts = jest.fn();
+    const section = mountWithNavigationProvider(
+      <Section
+        items={[
+          {
+            label: 'Orders',
+            url: '/orders',
+            subNavigationItems: [
+              {label: 'All orders', url: '/orders/all', onClick: onAllOrders},
+            ],
+          },
+          {
+            label: 'Products',
+            url: '/products',
+            subNavigationItems: [
+              {
+                label: 'All products',
+                url: '/products/all',
+                onClick: onAllProducts,
+              },
+            ],
+          },
+        ]}
+      />,
+      {location: '/', collapsed: true},
+    );
+
+    section.find(Item, {label: 'Orders'})!.trigger('onToggleExpandedState');
+    section.find(Item, {label: 'Orders'})!.find('li')!.trigger('onMouseEnter');
+    const ordersMenu = section.find(ActionList)!;
+    section.act(() => {
+      ordersMenu.prop('items')?.[0]?.onAction?.();
+      ordersMenu.prop('onActionAnyItem')?.();
+    });
+
+    section
+      .find(Item, {label: 'Products'})!
+      .find('li')!
+      .trigger('onMouseEnter');
+    const productsMenu = section.find(ActionList)!;
+    section.act(() => {
+      productsMenu.prop('items')?.[0]?.onAction?.();
+      productsMenu.prop('onActionAnyItem')?.();
+    });
+
+    expect(onAllOrders).toHaveBeenCalledTimes(1);
+    expect(onAllProducts).toHaveBeenCalledTimes(1);
+    expect(section.find(Item, {label: 'Orders'})).toHaveReactProps({
+      expanded: false,
+    });
+    expect(section.find(Item, {label: 'Products'})).toHaveReactProps({
       expanded: true,
     });
   });
